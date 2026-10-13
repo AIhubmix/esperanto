@@ -92,6 +92,7 @@ class OpenAICompatibleLanguageModel(ProfileAwareMixin, OpenAILanguageModel):
         if self._profile and not self._profile.supports_response_format:
             self._response_format_unsupported = True
         self._instance_extra_body: Dict[str, Any] = self._config.get("extra_body") or {}
+        self._instance_extra_headers: Dict[str, Any] = self._config.get("extra_headers") or {}
 
     def _is_likely_lmstudio(self) -> bool:
         """Check if this endpoint is likely LM Studio based on port.
@@ -334,6 +335,38 @@ class OpenAICompatibleLanguageModel(ProfileAwareMixin, OpenAILanguageModel):
                 key,
             )
         return {k: v for k, v in merged_extra_body.items() if k not in reserved_hits}
+
+    # Header keys that extra_headers can never override (case-insensitive).
+    # Authorization/Content-Type are derived from first-class state (self.api_key,
+    # the JSON payload) via OpenAILanguageModel._get_headers() — letting a config
+    # dict clobber them would silently desync wire auth from self.api_key.
+    _RESERVED_EXTRA_HEADER_KEYS = frozenset({"authorization", "content-type"})
+
+    def _strip_reserved_extra_headers(
+        self, extra_headers: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Drop reserved (case-insensitive) header keys, with a debug log per drop."""
+        reserved_hits = {
+            key for key in extra_headers
+            if key.lower() in self._RESERVED_EXTRA_HEADER_KEYS
+        }
+        if not reserved_hits:
+            return extra_headers
+        for key in reserved_hits:
+            logger.debug(
+                "Dropping reserved key %r from extra_headers; Authorization/"
+                "Content-Type are managed internally and cannot be overridden",
+                key,
+            )
+        return {k: v for k, v in extra_headers.items() if k not in reserved_hits}
+
+    def _get_headers(self) -> Dict[str, str]:
+        """Merge configured extra_headers on top of the base Authorization/
+        Content-Type headers. Overriding here (not in OpenAILanguageModel) scopes
+        the behaviour to the openai-compatible provider family only."""
+        headers = super()._get_headers()
+        headers.update(self._strip_reserved_extra_headers(self._instance_extra_headers))
+        return headers
 
     def _make_chat_request(
         self,

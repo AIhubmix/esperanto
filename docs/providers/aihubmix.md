@@ -110,3 +110,20 @@ model = AIFactory.create_language(
     },
 )
 ```
+
+### Optional APP-Code Header
+
+AIHubMix supports an optional `APP-Code` header for channel/app attribution (and, for most models other than Claude, a discount). Generate your own code at [aihubmix.com/appstore](https://aihubmix.com/appstore), then pass it via `extra_headers`:
+
+```python
+model = AIFactory.create_language(
+    "aihubmix",
+    "gpt-4o-mini",
+    config={
+        "api_key": "your-key",
+        "extra_headers": {"APP-Code": "your-app-code"},
+    },
+)
+```
+
+This is not required for normal usage. See [Sending Custom Headers](openai-compatible.md#sending-custom-headers) for the general mechanism, which applies to any provider built on `OpenAICompatibleLanguageModel`.
