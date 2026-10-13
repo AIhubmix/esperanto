@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **AIHubMix provider.** New built-in OpenAI-compatible profile (`aihubmix`)
+  for AIHubMix's gateway, which proxies models from OpenAI, Anthropic, Google,
+  and other upstream vendors behind a single API key. Static model discovery
+  is available via `AIFactory.get_provider_models("aihubmix")`. Configure with
+  `AIHUBMIX_API_KEY`; override the endpoint with `AIHUBMIX_BASE_URL` (default:
+  `https://aihubmix.com/v1`).
+
 ## [2.28.0] - 2026-10-03
 
 ### Added
