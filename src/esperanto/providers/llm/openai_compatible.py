@@ -365,7 +365,17 @@ class OpenAICompatibleLanguageModel(ProfileAwareMixin, OpenAILanguageModel):
         Content-Type headers. Overriding here (not in OpenAILanguageModel) scopes
         the behaviour to the openai-compatible provider family only."""
         headers = super()._get_headers()
-        headers.update(self._strip_reserved_extra_headers(self._instance_extra_headers))
+        extra_headers = self._strip_reserved_extra_headers(self._instance_extra_headers)
+        # Drop existing headers that extra_headers overrides, case-insensitively,
+        # so e.g. extra_headers={"openai-organization": ...} replaces the base
+        # "OpenAI-Organization" header instead of sending both.
+        override_keys_lower = {key.lower() for key in extra_headers}
+        headers = {
+            key: value
+            for key, value in headers.items()
+            if key.lower() not in override_keys_lower
+        }
+        headers.update(extra_headers)
         return headers
 
     def _make_chat_request(
@@ -779,6 +789,14 @@ class OpenAICompatibleLanguageModel(ProfileAwareMixin, OpenAILanguageModel):
             "model": self.get_model_name(),
             "model_kwargs": model_kwargs,
         }
+
+        # Pass configured extra_headers through so provider-specific headers
+        # (e.g. AIHubMix's APP-Code) aren't dropped when using LangChain.
+        sanitized_extra_headers = self._strip_reserved_extra_headers(
+            self._instance_extra_headers
+        )
+        if sanitized_extra_headers:
+            langchain_kwargs["default_headers"] = sanitized_extra_headers
 
         # Create new HTTP clients for LangChain with same SSL/timeout/proxy config
         # We create fresh clients instead of sharing ours because when this Esperanto

@@ -143,8 +143,8 @@ model = AIFactory.create_language(
 #### AIHubMix
 ```bash
 AIHUBMIX_API_KEY=...
-# Optional: override the default endpoint
-AIHUBMIX_BASE_URL=https://aihubmix.com/v1
+# Optional: AIHUBMIX_BASE_URL defaults to https://aihubmix.com/v1;
+# only set it if you're routing through a custom AIHubMix gateway endpoint.
 ```
 
 ```python

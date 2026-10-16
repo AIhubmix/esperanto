@@ -89,7 +89,7 @@ Deep dives into specialized features:
 → [Groq](./providers/groq.md)
 
 **"I want cost optimization"**
-→ [DeepSeek](./providers/deepseek.md), [SiliconFlow](./providers/siliconflow.md), [AIHubMix](./providers/aihubmix.md), [Ollama](./providers/ollama.md), or [OpenRouter](./providers/openrouter.md)
+→ [DeepSeek](./providers/deepseek.md), [SiliconFlow](./providers/siliconflow.md), [Ollama](./providers/ollama.md), or [OpenRouter](./providers/openrouter.md)
 
 ### By Provider
 
